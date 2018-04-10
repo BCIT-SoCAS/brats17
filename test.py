@@ -15,7 +15,6 @@ import time
 import os
 import sys
 import tensorflow as tf
-from tensorflow.contrib.data import Iterator
 from util.data_loader import *
 from util.data_process import *
 from util.train_test_func import *
