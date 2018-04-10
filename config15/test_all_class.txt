@@ -1,6 +1,6 @@
 [data]
 data_root         = data
-save_folder       = result15
+save_folder       = result
 data_names        = config15/test_names_temp.txt
 modality_postfix  = [Flair, T1, T1c, T2]
 file_postfix      = mha

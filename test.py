@@ -74,7 +74,7 @@ def test(config_file):
         net_name1sg    = config_net1sg['net_name']
         data_shape1sg  = config_net1sg['data_shape']
         label_shape1sg = config_net1sg['label_shape']
-        class_num1sg   = config_net1sg['class_num']
+        class_num1sg   = config_net1sg['clload ass_num']
 
         full_data_shape1sg = [batch_size] + data_shape1sg
         x1sg = tf.placeholder(tf.float32, shape = full_data_shape1sg)          
