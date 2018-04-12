@@ -3,3 +3,5 @@ data
 __pycache__
 *.nii.gz
 test_time.txt
+*.mha
+*.zip

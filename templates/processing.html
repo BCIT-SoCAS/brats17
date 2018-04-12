@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Processing MRI Request</title>
+</head>
+<body>
+    Processing your request. Please wait while Machine is doing its magic
+    <div id="status">Loading</div>
+    <script>
+        
+        let status = document.getElementById("status");
+        let query_interval;
+
+
+        function postRequest(url, data={}) {
+            return fetch(url, {
+                body: JSON.stringify(data),
+                cache: 'no-cache',
+                headers: {
+                    'content-type': 'application/json'
+                },
+                method: 'POST'
+            })
+        }
+
+
+        function queryStatus() {
+            postRequest('/queryStatus')
+                .then(response=>response.json())
+                .then(data => {
+                    console.log(data)
+                    if (data == 'Done') {
+                        clearInterval(query_interval)
+                        location.href="/brain_view"
+                    } 
+
+                    else {
+                        status.innerHTML = data
+                    }
+                })
+                .catch(err => console.log(err));
+        }
+
+        query_interval = setInterval(queryStatus, 4000)
+        
+    </script>
+</body>
+</html>

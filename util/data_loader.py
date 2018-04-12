@@ -73,7 +73,8 @@ class DataLoader():
             img_file_dirs = os.listdir(patient_dir)
             volume_name  = None
             for img_file_dir in img_file_dirs:
-                if(mod+'.' in img_file_dir):
+                # originally has .
+                if(mod in img_file_dir):
                     volume_name = img_file_dir + '/' + img_file_dir + '.' + self.file_postfix
                     break
         assert(volume_name is not None)

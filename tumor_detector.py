@@ -38,7 +38,7 @@ class TumorDetector:
         self._load_config(self.config_file)
         self._load_network()
         self._create_session()
-        self._load_models()
+        # self._load_models()
         # self._terminate_session()
 
 
@@ -160,7 +160,7 @@ class TumorDetector:
         self.sess.close()
         return
 
-    def _load_models(self):
+    def load_models(self):
 
         self._load_model(self.config_net1, self.net_config[0])
         if(self.config_test.get('whole_tumor_only', False) is False):
@@ -313,6 +313,7 @@ class TumorDetector:
         print('test time', test_time.mean())
         np.savetxt(save_folder + '/test_time.txt', test_time)
         
+        self._terminate_session()
         return
 
     def test_config(self, config_net, n_config):
