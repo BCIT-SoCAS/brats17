@@ -98,11 +98,27 @@
             
             initView();
 
-            postRequest('/getResults').then(response => response.json())
-            .then(data => {
-                initMRIImages(data)
-                drawImages()
-            }).catch(err => console.log(err))
+            // postRequest('/getResults').then(response => response.json())
+            // .then(data => {
+            //     initMRIImages(data)
+            //     drawImages()
+            // }).catch(err => console.log(err))
+            
+            console.log( {{ data.some }} )
+            let data = {
+                brain :{
+                    flair: {{ data.brain.flair }},
+                    t1: {{ data.brain.t1}},
+                    t1c: {{ data.brain.t1c }},
+                    t2: {{ data.brain.t2 }}
+                },
+                tumor: {{ data.tumor }}
+                
+            }
+
+            initMRIImages(data);
+            drawImages();
+
         }
 
         function initMRIImages(data) {
@@ -164,11 +180,12 @@
         function drawImages() {
             for (var key in view) {
                 let v = view[key]
+                
                 index = v.range.value
-                view[key].brain.draw(mri_images.current.getSlice(v.view,index),'grayscale',
-                    'grayscale', v.view==='side' || v.view==='front', v.view==='side');
-                view[key].tumor.draw(mri_images.tumor.getSlice(v.view,index),'grayscale',
-                    'grayscale', v.view==='side' || v.view==='front', v.view==='side');
+                v.brain.draw(mri_images.current.getSlice(v.view,index),'grayscale',
+                    v.view==='side' || v.view==='front', v.view==='side');
+                v.tumor.draw(mri_images.tumor.getSlice(v.view,index),'grayscale',
+                    v.view==='side' || v.view==='front', v.view==='side');
             }
         }
 
