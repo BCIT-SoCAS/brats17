@@ -1,51 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Processing MRI Request</title>
-</head>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/processing.css') }}"></style>
+	<title>Processing MRI Request</title>
+	</head>
 <body>
-    Processing your request. Please wait while Machine is doing its magic
-    <div id="status">Loading</div>
-    <script>
-        
-        let status = document.getElementById("status");
-        let query_interval;
+	<div id="outer">
+		<div id="title">
+			Processing your request. Please wait while the Machine is doing its magic
+		</div>
+		<div id="loader">
+			<div id="image" class=gif01></div>
+		</div>
+		<div id="status">
+			<div id="progress"></div>
+			<div id="bar">Loading</div>	
+		</div>
+	</div>
+	<script>
+
+		console.log("ready");
+
+		let bar = document.getElementById("bar");
+		let loader = document.getElementById("loader");
+		let status = document.getElementById("status");
+		let counter = 1;
+		let loadProg = 0;
+
+		let query_interval;
+
+		function postRequest(url, data={}) {
+			return fetch(url, {
+				body: JSON.stringify(data),
+				cache: 'no-cache',
+				headers: {
+					'content-type': 'application/json'
+				},
+				method: 'POST'
+			})
+		}
 
 
-        function postRequest(url, data={}) {
-            return fetch(url, {
-                body: JSON.stringify(data),
-                cache: 'no-cache',
-                headers: {
-                    'content-type': 'application/json'
-                },
-                method: 'POST'
-            })
-        }
+		function queryStatus() {
+			postRequest('/queryStatus')
+				.then(response=>response.json())
+				.then(data => {
+				if (data == 'Done') {
+					clearInterval(query_interval)
+					bar.innerHTML = data
+					statusUpd();
+					location.href="/brain_view"
+				}
+				else if (bar.innerHTML != data) {
+					bar.innerHTML = data
+					statusUpd();
+				}
+			})
+				.catch(err => console.log(err));
+		}
 
-
-        function queryStatus() {
-            postRequest('/queryStatus')
-                .then(response=>response.json())
-                .then(data => {
-                    console.log(data)
-                    if (data == 'Done') {
-                        clearInterval(query_interval)
-                        location.href="/brain_view"
-                    } 
-
-                    else {
-                        status.innerHTML = data
-                    }
-                })
-                .catch(err => console.log(err));
-        }
-
-        query_interval = setInterval(queryStatus, 4000)
-        
-    </script>
+		function statusUpd() {
+			counter++;
+			if(counter > 4) {
+				counter = 1;
+			}
+			loadProg++;
+			
+			if (loadProg == 1) {
+				document.getElementById("progress").style.width = "25%";
+				document.getElementById("progress").style.marginRight = "-25%";
+			}
+			else if (loadProg == 2) {
+				document.getElementById("progress").style.width = "50%";
+				document.getElementById("progress").style.marginRight = "-50%";
+			}
+			else if (loadProg == 3) {
+				document.getElementById("progress").style.width = "75%";
+				document.getElementById("progress").style.marginRight = "-75%";
+			}
+			else if (loadProg == 4) {
+				document.getElementById("progress").style.width = "100%";
+				document.getElementById("progress").style.marginRight = "-100%";
+			}
+			
+			document.getElementById("image").setAttribute("class", "gif0" + counter);
+		}
+		query_interval = setInterval(queryStatus, 4000);
+	</script>
 </body>
 </html>
