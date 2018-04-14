@@ -50,7 +50,7 @@ def show_main():
     }
 
     return render_template('main.html', data=data)
- 
+  
 @app.route('/upload', methods = ['POST'])
 def upload():
 

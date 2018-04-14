@@ -4,45 +4,147 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">    
     <title>MRI Viewer</title>
+    <style>
+        
+        h4 {
+            text-align: center
+        }
+
+        canvas {
+            width:100%;
+            height: auto;
+        }
+
+        #overlay {
+            width: 100vw;
+            height: 100vh;
+            background-color:aliceblue;
+            z-index: 2;
+            position: fixed;
+        }
+    </style>
 </head>
 <body>
-    MRI Viewer
-    <div>
-        <div>
-            <label for="scan_type">Scan Type</label>
-            <select id="scan_type">
-                <option value="flair">Flair</option>
-                <option value="t1">T1</option>
-                <option value="t1c">T1c</option>
-                <option value="t2">T2</option>
-            </select>
-            <a href='/download' target="blank"><input type="button" value="Download nii.gz. tumor file"/></a>
-        </div>
-        <div>
-            <canvas id="ax_b"></canvas>
-            <canvas id="ax_t"></canvas>
-            <input type="range" id="ax_range"/>
-            <input type="text" id="ax_index"/>
-        </div>
-        <div>
-            <div>
-                <canvas id="sg_b"></canvas>
-                <canvas id="sg_t"></canvas>
-                <input type="range" id="sg_range"/>
-                <input type="text" id="sg_index"/>
-            </div>
-            <div>
-                <canvas id="cr_b"></canvas>
-                <canvas id="cr_t"></canvas>
-                <input type="range" id="cr_range"/>
-                <input type="text" id="cr_index"/>
-            </div>
-        </div>
-        
-    </div>
-    <script>
 
+    <nav>
+        <div class="nav-wrapper">
+            <div class="brand-logo">MRI Viewer</div>
+       </div>
+    </nav>
+    <div id="overlay">
+        <div class="progress">
+            <div class="indeterminate"></div>
+        </div>
+        <h3 style="font-style:italic; text-align:center">Grabbing all necessary images</h3>
+        <div style="font-style:italic; text-align:center">This may take a while. Grab a coffee</div>
+    </div>
+
+    <div class="row" style="padding-top:2vh">
+  
+        <div class="col s2">
+            <div class="input-field">
+                <select id="scan_type">
+                    <option value="flair">Flair</option>
+                    <option value="t1">T1</option>
+                    <option value="t1c">T1c</option>
+                    <option value="t2">T2</option>
+                </select>
+                <label>Select Scan Type</label>
+            </div>
+            
+        </div>
+        <div class="col s2">
+                <a href='/download' target="blank">
+                    <button type="button" class="btn waves-effect waves-light green"/>
+                        Download nii.gz
+                        <i class="material-icons right">file_download</i>
+                    </button>
+                </a>
+        </div>
+    </div>
+    <div class="row" style="padding-top:5vh">
+
+        <div class="col s4">
+            <h4>Axial</h4>
+            <div class="row">
+                <div class="col s6">
+                    <canvas id="ax_b"></canvas>
+                </div>
+                <div class="col s6">
+                    <canvas id="ax_t"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s6 offset-s2">
+                    <input type="range" id="ax_range"/>
+                </div>
+                <div class="col s2">
+                    <input type="text" id="ax_index"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="col s4">
+            <h4>Saggital</h4>
+            <div class="row">
+                <div class="col s6">
+                    <canvas id="sg_b"></canvas>
+                </div>
+                <div class="col s6">
+                    <canvas id="sg_t"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s6 offset-s2">
+                    <input type="range" id="sg_range"/>
+                </div>
+                <div class="col s2">
+                    <input type="text" id="sg_index"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="col s4">
+            <h4>Coronal</h4>
+            <div class="row">
+                <div class="col s6">
+                    <canvas id="cr_b"></canvas>
+                </div>
+                <div class="col s6">
+                    <canvas id="cr_t"></canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s6 offset-s2">
+                    <input type="range" id="cr_range"/>
+                </div>
+                <div class="col s2">
+                    <input type="text" id="cr_index"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+
+    <script>
+        
+        var elem = document.querySelector('select');
+        var instance = M.FormSelect.init(elem);
+
+        // Or with jQuery
+
+        $(document).ready(function(){
+            $('select').formSelect();
+        });
+        
+        
         var mri_images
         var scan_types = {
             flair: 0,
@@ -118,6 +220,10 @@
 
             initMRIImages(data);
             drawImages();
+
+            //remove the overlay
+            overlay = document.getElementById("overlay");
+            overlay.style.visibility = 'hidden'
 
         }
 
@@ -297,6 +403,7 @@
         }
 
         main()
+
     </script>
 </body>
 </html>
