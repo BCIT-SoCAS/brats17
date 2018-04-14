@@ -26,6 +26,12 @@
             z-index: 2;
             position: fixed;
         }
+
+        .home {
+            position: absolute;
+            top: 80px;
+            right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -35,6 +41,12 @@
             <div class="brand-logo">MRI Viewer</div>
        </div>
     </nav>
+    
+    <a class="waves-effect waves-light btn blue darken-2 home" id="home">
+        <i class="material-icons left">home</i>
+        Home
+    </a>
+
     <div id="overlay">
         <div class="progress">
             <div class="indeterminate"></div>
@@ -60,13 +72,13 @@
         <div class="col s2">
                 <a href='/download' target="blank">
                     <button type="button" class="btn waves-effect waves-light green"/>
-                        Download nii.gz
+                        Download Tumor File (.nii.gz)
                         <i class="material-icons right">file_download</i>
                     </button>
                 </a>
         </div>
     </div>
-    <div class="row" style="padding-top:5vh">
+    <div class="row" style="padding-top:2vh">
 
         <div class="col s4">
             <h4>Axial</h4>
@@ -128,6 +140,23 @@
             </div>
         </div>
     </div>
+    
+    <div class="row">
+        <div class="col s6 offset-s3">
+            <div class="card-panel teal" id="prediction" style="text-align:center">
+                <span class="white-text">
+                    Predicting survivability in days
+                </span>
+                <div class="progress" id="progress_pred">
+                    <div class="indeterminate"></div>
+                </div>
+            </div>
+
+            
+          
+        </div>
+    </div>
+            
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     
     <!-- Compiled and minified JavaScript -->
@@ -222,8 +251,45 @@
             //request for the prediction
             console.log('predicting')
             postRequest('/predict').then(response => response.json())
-                .then(data => console.log(data))
+                .then(data => {
+                    console.log(data)
 
+                    let prediction_div = document.getElementById("prediction");
+                    //delete everything else
+                    prediction_div.innerHTML = ""
+                    prediction_div.appendChild(create_pred_div(data));
+                    
+                })
+
+        }
+
+        function create_pred_div(data) {
+            
+            var result_div = document.createElement('div');
+
+            let labels = ['Less than 250 Days','250 to 500 Days','More than 500 Days']
+
+            let title_div = document.createElement('h5');
+            title_div.innerHTML = 'Survivability Prediction';
+            title_div.style.color = 'white';
+            result_div.appendChild(title_div);
+            
+            for(let x = 0 ; x < labels.length ; x++) {
+
+                let prediction_div = document.createElement('div');
+                prediction_div.style.color = 'white';
+                prediction_div.style.fontWeight = 'bold';
+                prediction_div.innerHTML = `${labels[x]}: ${data[labels[x]]}%`
+                result_div.appendChild(prediction_div); 
+            }
+            
+            let note_div = document.createElement('div')
+            note_div.style.color = 'white';
+            note_div.style.fontStyle = 'italic'
+            note_div.innerHTML = '*Note: These predictions are ~50% accurate'
+            result_div.appendChild(note_div);
+
+            return result_div;
         }
 
         function initMRIImages(data) {
@@ -270,6 +336,7 @@
 
             for (let key in view){
                 let v = view[key]
+
                 v.index.value = v.range.value; 
                 v.range.addEventListener('change', function(event) {
                     v.index.value = v.range.value;
