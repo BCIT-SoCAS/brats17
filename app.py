@@ -6,6 +6,7 @@ import os
 import threading
 from brain_img_processor import * 
 from flask_compress import Compress
+from test3d import *
 
 status = "Free"
 td = TumorDetector()
@@ -18,6 +19,8 @@ def start_app():
 
 app = start_app()
 uploads_folder = os.path.join('data','tumor')
+pred_model_path = os.path.join('pred_model', 'mri_modelv5.h5')
+tumor_path = os.path.join('result', 'tumor.nii.gz')
   
 @app.route('/', methods = ['GET'])   
 def index():
@@ -98,6 +101,12 @@ def upload():
 def query_status(): 
     return jsonify(status) 
  
+@app.route('/predict', methods=['POST'])
+def predict_survivability():
+    enc_pred = getEncodedPrediction(pred_model_path,tumor_path)
+    result = getLabelPrediction(enc_pred)
+    return jsonify(result)
+
 @app.route('/download', methods=['GET'])
 def download():
     return send_from_directory(directory='result', filename='tumor.nii.gz', as_attachment=True)
