@@ -94,34 +94,17 @@ def get_min_max(size, img_array, thresh):
 
         if not found_lb:
 
-            check_array = img_array[i].flatten()
-
-            if trim(check_array).shape[0] >= thresh:
+            if np.count_nonzero(img_array[i]) >= thresh:
                 found_lb = True
                 min = i
 
         if not found_ub:
             
-            check_array = img_array[k].flatten()
-
-            if trim(check_array).shape[0] >= thresh:
+            if np.count_nonzero(img_array[k]) >= thresh:
                 found_ub = True
                 max = k
 
     return min, max
-
-def trim(arr):
-	arr = np.ndarray.tolist(arr)
-	for i in arr:
-		if arr[0] == 0:
-			del arr[0]
-		if arr[-1] == 0:
-			del arr[-1]
-		if arr[0] != 0 and arr[-1] != 0:
-			break
-			
-	arr = np.asarray(arr)
-	return(arr)	
 
 if __name__ == '__main__':
 
