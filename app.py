@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, make_response
 from werkzeug import secure_filename
 from zipfile import ZipFile
 from tumor_detector import TumorDetector
@@ -7,10 +7,13 @@ import threading
 from brain_img_processor import * 
 from flask_compress import Compress
 from test3d import *
+import time
+import msgpack
 
 status = "Free"
 td = TumorDetector()
 compress = Compress()
+_test = True
 
 def start_app():
     app = Flask(__name__)
@@ -28,31 +31,7 @@ def index():
  
 @app.route('/brain_view', methods= ['GET'])
 def show_main():
-
-    flair_path = os.path.join(uploads_folder,'uploaded_MR_Flair','uploaded_MR_Flair.mha')
-    t1_path = os.path.join(uploads_folder,'uploaded_MR_T1','uploaded_MR_T1.mha')
-    t1c_path = os.path.join(uploads_folder,'uploaded_MR_T1c','uploaded_MR_T1c.mha')
-    t2_path = os.path.join(uploads_folder,'uploaded_MR_T2','uploaded_MR_T2.mha')
-    tumor_path = os.path.join('result','tumor.nii.gz')
-
-    flair_data = BrainData(flair_path)
-    t1_data = BrainData(t1_path)
-    t1c_data = BrainData(t1c_path) 
-    t2_data = BrainData(t2_path)
-    tumor_data = BrainData(tumor_path) 
- 
-    brain = {
-        'flair': flair_data.data.tolist(),
-        't1': t1_data.data.tolist(),
-        't1c': t1c_data.data.tolist(),
-        't2': t2_data.data.tolist()
-    }
-    data = {
-        'brain': brain,   
-        'tumor': tumor_data.data.tolist() 
-    }
-
-    return render_template('main.html', data=data)
+    return render_template('main.html')
   
 @app.route('/upload', methods = ['POST'])
 def upload():
@@ -92,15 +71,50 @@ def upload():
     # delete the zip file
     os.remove(rel_path) 
 
-    thread = threading.Thread(target=run_test, args=(update_status,))
+    if _test:
+        thread = threading.Thread(target=emulate_loading)
+    else:
+        thread = threading.Thread(target=run_test, args=(update_status,))
     thread.start()
+
+
     # call load_data from tumor_detector
     return render_template('processing.html') 
  
 @app.route('/queryStatus', methods=['POST']) 
 def query_status(): 
     return jsonify(status) 
- 
+
+@app.route('/getMRIs', methods=['POST'])
+def get_mris():
+    print('requesting MRIs')
+    flair_path = os.path.join(uploads_folder,'uploaded_MR_Flair','uploaded_MR_Flair.mha')
+    t1_path = os.path.join(uploads_folder,'uploaded_MR_T1','uploaded_MR_T1.mha')
+    t1c_path = os.path.join(uploads_folder,'uploaded_MR_T1c','uploaded_MR_T1c.mha')
+    t2_path = os.path.join(uploads_folder,'uploaded_MR_T2','uploaded_MR_T2.mha')
+    tumor_path = os.path.join('result','tumor.nii.gz')
+
+    flair_data = BrainData(flair_path)
+    t1_data = BrainData(t1_path)
+    t1c_data = BrainData(t1c_path) 
+    t2_data = BrainData(t2_path)
+    tumor_data = BrainData(tumor_path) 
+
+    brain = {
+        'flair': flair_data.data.tolist(),
+        't1': t1_data.data.tolist(),
+        't1c': t1c_data.data.tolist(),
+        't2': t2_data.data.tolist()
+    }
+    data = {
+        'brain': brain,   
+        'tumor': tumor_data.data.tolist() 
+    }
+
+    resp = make_response(msgpack.packb(data, use_bin_type=True))
+    resp.headers.extend({})
+    return resp
+
 @app.route('/predict', methods=['POST'])
 def predict_survivability():
     enc_pred = getEncodedPrediction(pred_model_path,tumor_path)
@@ -115,7 +129,17 @@ def update_status(new_status):
     global status
     status = new_status
 
-  
+def emulate_loading():
+    update_status('Configuring Neural Network') 
+    time.sleep(7)
+    update_status('Loading Models')
+    time.sleep(7)
+    update_status('Loading Data')
+    time.sleep(7)
+    update_status('Testing Data on Models')
+    time.sleep(7)
+    update_status('Done')
+
 def run_test(cb): 
     cb('Configuring Neural Network') 
     td.start()
