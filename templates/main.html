@@ -7,26 +7,8 @@
     <!-- Compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">    
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}"></style>
     <title>MRI Viewer</title>
-    <style>
-        
-        h4 {
-            text-align: center
-        }
-
-        canvas {
-            width:100%;
-            height: auto;
-        }
-
-        #overlay {
-            width: 100vw;
-            height: 100vh;
-            background-color:aliceblue;
-            z-index: 2;
-            position: fixed;
-        }
-    </style>
 </head>
 <body>
 
@@ -35,6 +17,12 @@
             <div class="brand-logo">MRI Viewer</div>
        </div>
     </nav>
+    
+    <a class="waves-effect waves-light btn blue darken-2 home" id="home">
+        <i class="material-icons left">home</i>
+        Home
+    </a>
+
     <div id="overlay">
         <div class="progress">
             <div class="indeterminate"></div>
@@ -60,13 +48,13 @@
         <div class="col s2">
                 <a href='/download' target="blank">
                     <button type="button" class="btn waves-effect waves-light green"/>
-                        Download nii.gz
+                        Download Tumor File (.nii.gz)
                         <i class="material-icons right">file_download</i>
                     </button>
                 </a>
         </div>
     </div>
-    <div class="row" style="padding-top:5vh">
+    <div class="row" style="padding-top:2vh">
 
         <div class="col s4">
             <h4>Axial</h4>
@@ -128,281 +116,25 @@
             </div>
         </div>
     </div>
+    
+    <div class="row">
+        <div class="col s6 offset-s3">
+            <div class="card-panel teal" id="prediction" style="text-align:center">
+                <span class="white-text">
+                    Predicting survivability in days
+                </span>
+                <div class="progress" id="progress_pred">
+                    <div class="indeterminate"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+            
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     
     <!-- Compiled and minified JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
-
-    <script>
-        
-        var elem = document.querySelector('select');
-        var instance = M.FormSelect.init(elem);
-
-        // Or with jQuery
-
-        $(document).ready(function(){
-            $('select').formSelect();
-        });
-        
-        
-        var mri_images
-        var scan_types = {
-            flair: 0,
-            t1: 1,
-            t1c: 2,
-            t2: 3
-        }
-        current_scan = 'flair'
-
-        let view = {
-            ax: {
-                view: 'top',
-                brain: document.getElementById('ax_b'),
-                tumor: document.getElementById('ax_t'),
-                range: document.getElementById('ax_range'),
-                index: document.getElementById('ax_index')
-            },
-            sg: {
-                view: 'side',
-                brain: document.getElementById('sg_b'),
-                tumor: document.getElementById('sg_t'),
-                range: document.getElementById('sg_range'),
-                index: document.getElementById('sg_index')
-            },
-            cr: {
-                view: 'front',
-                brain: document.getElementById('cr_b'),
-                tumor: document.getElementById('cr_t'),
-                range: document.getElementById('cr_range'),
-                index: document.getElementById('cr_index')
-            }
-        }
-        
-        function initView() {
-
-            var scan_type = document.getElementById('scan_type');
-            var download = document.getElementById('download');
-
-            scan_type.selectedIndex = scan_types[current_scan]
-
-            for (var key in view) {
-                view[key].brain.draw = draw;
-                view[key].tumor.draw = draw;
-            }
-
-            scan_type.addEventListener('change', function(event) {
-                mri_images.current.data = mri_images.scans[this.value];
-                drawImages();
-            })
-        }
-        
-        function main() {
-            
-            initView();
-            
-            console.log( {{ data.some }} )
-            let data = {
-                brain :{
-                    flair: {{ data.brain.flair }},
-                    t1: {{ data.brain.t1}},
-                    t1c: {{ data.brain.t1c }},
-                    t2: {{ data.brain.t2 }}
-                },
-                tumor: {{ data.tumor }}
-                
-            }
-
-            initMRIImages(data);
-            drawImages();
-
-            //remove the overlay
-            overlay = document.getElementById("overlay");
-            overlay.style.visibility = 'hidden'
-
-            //request for the prediction
-            console.log('predicting')
-            postRequest('/predict').then(response => response.json())
-                .then(data => console.log(data))
-
-        }
-
-        function initMRIImages(data) {
-
-
-            mri_images = {
-                scans: data.brain,
-                current: {
-                    data: data.brain[current_scan],
-                    getSlice: getSlice,
-                    dim: {
-                        depth: data.brain[current_scan].length,
-                        height:data.brain[current_scan][0].length,
-                        width: data.brain[current_scan][0][0].length
-                    }
-                },
-                tumor: {
-                    data: data.tumor,
-                    getSlice: getSlice,
-                    dim: { 
-                        depth: data.tumor.length,
-                        height:data.tumor[0].length,
-                        width: data.tumor[0][0].length
-                    }
-                }
-            }
-
-            // initialize index values and set default  
-            half_depth = Math.floor(data.brain[current_scan].length / 2);
-            half_width = Math.floor(data.brain[current_scan][0][0].length / 2);
-            half_height = Math.floor(data.brain[current_scan][0].length / 2);
-            
-            view.ax.range.max = mri_images.current.dim.depth;
-            view.sg.range.max = mri_images.current.dim.width;
-            view.cr.range.max = mri_images.current.dim.height
-
-            view.ax.range.value = half_depth;
-            view.sg.range.value = half_width;
-            view.cr.range.value = half_height;
-
-            view.ax.range.value = half_depth;
-            view.sg.range.value = half_width;
-            view.cr.range.value = half_height;
-
-            for (let key in view){
-                let v = view[key]
-                v.index.value = v.range.value; 
-                v.range.addEventListener('change', function(event) {
-                    v.index.value = v.range.value;
-                    v.brain.draw(mri_images.current.getSlice(v.view,v.range.value), 
-                        'grayscale', v.view==='side' || v.view==='front', v.view==='side')
-                    v.tumor.draw(mri_images.tumor.getSlice(v.view,v.range.value), 
-                        'grayscale', v.view==='side' || v.view==='front', v.view==='side') 
-                })
-            }
-            
-        } 
-
-        function drawImages() {
-            for (var key in view) {
-                let v = view[key]
-                
-                index = v.range.value
-                v.brain.draw(mri_images.current.getSlice(v.view,index),'grayscale',
-                    v.view==='side' || v.view==='front', v.view==='side');
-                v.tumor.draw(mri_images.tumor.getSlice(v.view,index),'grayscale',
-                    v.view==='side' || v.view==='front', v.view==='side');
-            }
-        }
-
-        function getSlice(type="top", index) {
-
-            if(type === 'top') {
-                if(index >= this.data.length) {
-                    index = this.data.length - 1;
-                }
-
-                if(index < 0) {
-                    index = 0
-                }
-                
-                return this.data[index]
-            } 
-            else if(type === 'side')
-            {
-                result = [];
-                
-                // check out of bounds
-                if (index >= this.data[0][0].length) {
-                    index = this.data[0][0].length - 1
-                }
-
-                if (index < 0) {
-                    index = 0;
-                }
-
-                for(var x = 0 ; x < this.data.length; x++) {
-                    temp_array = []
-                    for(var y= 0; y < this.data[x].length; y++)
-                    {
-                        temp_array.push(this.data[x][y][index])
-                    }
-                    result.push(temp_array)
-                }
-                return result;
-            } 
-            else if(type === 'front') {
-                
-                result = [];
-
-                for(var x = 0; x < this.data.length ; x++) {
-                    result.push(this.data[x][index])
-                }
-                return result;
-            }
-            return []
-        }
-
-        function draw(img_array, type='RGB', flipx=false, flipy=false, alpha=1) {
-            
-            var ctx = this.getContext('2d');
-            
-            var startx = (flipx)? img_array.length - 1 : 0;
-            var endx = (flipx)? 0 : img_array.length - 1;
-            var stepx = (flipx)? -1 : 1;
-
-            var starty = (flipy)? img_array[0].length - 1 : 0;
-            var endy = (flipy)? 0 : img_array[0].length -1;
-            var stepy = (flipy)? -1 : 1;
-
-
-            var imageWidth = img_array[0].length
-            var imageHeight = img_array.length
-            // change the size of the canvase depending on image array
-            // TODO, use scale, its better to have a static sized canvas 
-            // computation would be target / size of image array = scalar
-            // scalar can be used to scale
-
-            this.height = imageHeight;
-            this.width = imageWidth;
-
-            if(type === 'grayscale') {
-                for (i=startx, x=0; i != endx; i+=stepx, x++){
-                    for(j=starty, y=0; j != endy;j+=stepy, y++){
-                        let color = img_array[i][j]
-                        ctx.fillStyle = "rgb("+color+","+color+","+color+")";
-                        ctx.fillRect(y, x, 1, 1);
-                    }
-                }
-            } 
-            else if (type === 'RGB') {
-                                
-                for (i=startx, x=0; i != endx; i+=stepx, x++){
-                    for(j=starty, y=0; j != endy;j+=stepy, y++){
-                        let color = img_array[i][j]
-                        if(color !== 0)
-                        {
-                            ctx.fillStyle = "rgba("+color['red']+","+color['green']+","+color['blue']+","+alpha+")";
-                            ctx.fillRect(y, x, 1, 1);
-                        }
-                    }
-                }
-            }
-        }
-        
-        // UTILITIES
-        function postRequest(url, data={}) {
-            return fetch(url, {
-                body: JSON.stringify(data),
-                cache: 'no-cache',
-                headers: {
-                    'content-type': 'application/json'
-                },
-                method: 'POST'
-            })
-        }
-
-        main()
-
-    </script>
+    <script src="{{ url_for('static', filename='js/msgpack.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mri.js') }}"></script>
 </body>
 </html>
