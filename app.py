@@ -22,7 +22,7 @@ def start_app():
 
 app = start_app()
 uploads_folder = os.path.join('data','tumor')
-pred_model_path = os.path.join('pred_model', 'mri_modelv5.h5')
+pred_model_path = os.path.join('pred_model', 'best_model.h5')
 tumor_path = os.path.join('result', 'tumor.nii.gz')
   
 @app.route('/', methods = ['GET'])   
@@ -46,13 +46,13 @@ def upload():
     with ZipFile(rel_path) as myzip:
         files = myzip.namelist()
         for file in files: 
-            if file.endswith('Flair.mha'):
+            if 'Flair' in file:
                 bucket = 'uploaded_MR_Flair'
-            elif file.endswith('T1.mha'):
+            elif 'T1' in file:
                 bucket = 'uploaded_MR_T1' 
-            elif file.endswith('T2.mha'):
+            elif 'T2' in file:
                 bucket = 'uploaded_MR_T2' 
-            elif file.endswith('T1c.mha'):
+            elif 'T1c' in file:
                 bucket = 'uploaded_MR_T1c'
 
             path = os.path.join(uploads_folder, bucket)
