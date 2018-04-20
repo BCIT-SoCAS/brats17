@@ -13,7 +13,7 @@ import msgpack
 status = "Free"
 td = TumorDetector()
 compress = Compress()
-_test = True
+_test = False
 
 def start_app():
     app = Flask(__name__)
@@ -36,7 +36,7 @@ def show_main():
 @app.route('/upload', methods = ['POST'])
 def upload():
 
-    status = "Free"
+    update_status("Free")
     f = request.files['file']
     rel_path = os.path.join(uploads_folder, secure_filename(f.filename))
 
