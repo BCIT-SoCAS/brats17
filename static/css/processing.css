@@ -9,7 +9,8 @@ body {
 	text-align: center;
 }
 #title {
-	font-size: 4.5vw;
+	font-size: 2.5vw;
+	font-family: 'Suez One', serif;
 }
 #bar {
 	font-size: 2vw;
@@ -17,17 +18,22 @@ body {
 	background: rgba(255,255,255,0);
 	transition: all ease 0.5s;
 	flex-grow: 1;
+	border-radius: 15px;
+	font-family: 'Suez One', serif;
+	font-size: 16pt;
 }
 #status {
 	display: flex;
 	flex-flow: row;
 	padding-left: 10vw;
 	padding-right: 10vw;
+	
 }
 #progress {
-	background-color: #00aa38;
+	background-color: #02df4c;
 	transition: all ease 0.5s;
 	width: 0;
+	border-radius: 15px;
 }
 #image {
 	width: 20vw;

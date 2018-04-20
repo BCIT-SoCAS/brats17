@@ -23,24 +23,24 @@ function queryStatus() {
         .then(response=>response.json())
         .then(data => {
         
-        bar.innerHTML = data
-        statusUpd(data);
-        
-        if (data == 'Done') {
-            clearInterval(query_interval)
+            bar.innerHTML = data
+            statusUpd(data);
             
-            location.href="/brain_view"
-        }
-    })
-        .catch(err => console.log(err));
+            if (data == 'Done') {
+                clearInterval(query_interval)
+                
+                location.href="/brain_view"
+            }
+        }).catch(err => console.log(err));
 }
 
-function statusUpd() {
+function statusUpd(status) {
     
     let width = "0";
     let marginRight = "0%";
-    counter = 1
-    switch(data) {
+    counter = 1;
+    console.log(status)
+    switch(status) {
         case 'Configuring Neural Network':
             width = '15%';
             marginRight = "-15%"

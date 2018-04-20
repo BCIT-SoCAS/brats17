@@ -46,14 +46,14 @@ def upload():
     with ZipFile(rel_path) as myzip:
         files = myzip.namelist()
         for file in files: 
-            file = file.lower()
-            if 'flair' in file:
+            lower_fname = file.lower()
+            if 'flair' in lower_fname:
                 bucket = 'uploaded_MR_Flair'
-            elif 't1' in file:
+            elif 't1' in lower_fname:
                 bucket = 'uploaded_MR_T1' 
-            elif 't2' in file:
+            elif 't2' in lower_fname:
                 bucket = 'uploaded_MR_T2' 
-            elif 't1c' in file:
+            elif 't1c' in lower_fname:
                 bucket = 'uploaded_MR_T1c'
 
             path = os.path.join(uploads_folder, bucket)

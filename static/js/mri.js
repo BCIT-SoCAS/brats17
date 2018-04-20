@@ -89,7 +89,11 @@ function main() {
 
         })
 
-    // TODO uncomment this
+    let home = document.getElementById('home');
+
+    home.addEventListener('click', function(){
+        location.href='http://localhost:5000'
+    });
     
 
 }
