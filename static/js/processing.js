@@ -3,8 +3,6 @@ console.log("ready");
 let bar = document.getElementById("bar");
 let loader = document.getElementById("loader");
 let status = document.getElementById("status");
-let counter = 1;
-let loadProg = 0;
 
 let query_interval;
 
@@ -26,41 +24,52 @@ function queryStatus() {
         .then(data => {
         
         bar.innerHTML = data
-        statusUpd();
+        statusUpd(data);
         
         if (data == 'Done') {
             clearInterval(query_interval)
             
-            // location.href="/brain_view"
+            location.href="/brain_view"
         }
     })
         .catch(err => console.log(err));
 }
 
 function statusUpd() {
-    counter++;
-    if(counter > 4) {
-        counter = 1;
-    }
-    loadProg++;
     
-    if (loadProg == 1) {
-        document.getElementById("progress").style.width = "25%";
-        document.getElementById("progress").style.marginRight = "-25%";
-    }
-    else if (loadProg == 2) {
-        document.getElementById("progress").style.width = "50%";
-        document.getElementById("progress").style.marginRight = "-50%";
-    }
-    else if (loadProg == 3) {
-        document.getElementById("progress").style.width = "75%";
-        document.getElementById("progress").style.marginRight = "-75%";
-    }
-    else if (loadProg == 4) {
-        document.getElementById("progress").style.width = "100%";
-        document.getElementById("progress").style.marginRight = "-100%";
+    let width = "0";
+    let marginRight = "0%";
+    counter = 1
+    switch(data) {
+        case 'Configuring Neural Network':
+            width = '15%';
+            marginRight = "-15%"
+            counter = 1;
+            break;
+        case 'Loading Models':
+            width = '50%';
+            marginRight = '-50%';
+            counter = 2;
+            break;
+        case 'Loading Data':
+            width = '65%';
+            marginRight = '-65%';
+            counter = 3;
+            break;
+        case  'Testing Data on Models':
+            width = '90%'
+            marginRight = '-90%';
+            counter = 4;
+            break;
+        case 'Done':
+            width = '100%';
+            marginRight = '-100%';
+            counter = 5
+        
     }
     
+    document.getElementById("progress").style.width = width;
+    document.getElementById("progress").style.marginRight = marginRight;
     document.getElementById("image").setAttribute("class", "gif0" + counter);
 }
 query_interval = setInterval(queryStatus, 4000);
